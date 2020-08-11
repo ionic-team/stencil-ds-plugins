@@ -11,9 +11,12 @@ export const reactOutputTarget = (outputTarget: OutputTargetReact): OutputTarget
     return normalizeOutputTarget(config, outputTarget);
   },
   async generator(config, compilerCtx, buildCtx) {
+    const normalizedOutputTarget = normalizeOutputTarget(config, outputTarget) as Required<
+      OutputTargetReact
+    >;
     const timespan = buildCtx.createTimeSpan(`generate react started`, true);
 
-    await reactProxyOutput(compilerCtx, outputTarget, buildCtx.components, config);
+    await reactProxyOutput(compilerCtx, normalizedOutputTarget, buildCtx.components, config);
 
     timespan.finish(`generate react finished`);
   },
@@ -25,6 +28,7 @@ export function normalizeOutputTarget(config: Config, outputTarget: any) {
     excludeComponents: outputTarget.excludeComponents || [],
     includePolyfills: outputTarget.includePolyfills ?? true,
     includeDefineCustomElements: outputTarget.includeDefineCustomElements ?? true,
+    tagNameModifier: outputTarget.tagNameModifier ?? ((tagName: string) => tagName),
   };
 
   if (config.rootDir == null) {

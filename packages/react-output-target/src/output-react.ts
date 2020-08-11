@@ -1,11 +1,11 @@
 import path from 'path';
-import { OutputTargetReact, PackageJSON } from './types';
+import { OutputTargetReact, PackageJSON, TagNameModifier } from './types';
 import { dashToPascalCase, normalizePath, readPackageJson, relativeImport, sortBy } from './utils';
 import { CompilerCtx, ComponentCompilerMeta, Config } from '@stencil/core/internal';
 
 export async function reactProxyOutput(
   compilerCtx: CompilerCtx,
-  outputTarget: OutputTargetReact,
+  outputTarget: Required<OutputTargetReact>,
   components: ComponentCompilerMeta[],
   config: Config,
 ) {
@@ -27,7 +27,7 @@ function getFilteredComponents(excludeComponents: string[] = [], cmps: Component
 export function generateProxies(
   components: ComponentCompilerMeta[],
   pkgData: PackageJSON,
-  outputTarget: OutputTargetReact,
+  outputTarget: Required<OutputTargetReact>,
   rootDir: string,
 ) {
   const distTypesDir = path.dirname(pkgData.types);
@@ -65,19 +65,23 @@ import { createReactComponent } from './react-component-lib';\n`;
     typeImports,
     sourceImports,
     registerCustomElements,
-    components.map(createComponentDefinition).join('\n'),
+    components.map(createComponentDefinition(outputTarget.tagNameModifier)).join('\n'),
   ];
 
   return final.join('\n') + '\n';
 }
 
-function createComponentDefinition(cmpMeta: ComponentCompilerMeta) {
+const createComponentDefinition = (tagNameModifier: TagNameModifier) => (
+  cmpMeta: ComponentCompilerMeta,
+) => {
   const tagNameAsPascal = dashToPascalCase(cmpMeta.tagName);
 
   return [
-    `export const ${tagNameAsPascal} = /*@__PURE__*/createReactComponent<${IMPORT_TYPES}.${tagNameAsPascal}, HTML${tagNameAsPascal}Element>('${cmpMeta.tagName}');`,
+    `export const ${tagNameAsPascal} = /*@__PURE__*/createReactComponent<${IMPORT_TYPES}.${tagNameAsPascal}, HTML${tagNameAsPascal}Element>('${tagNameModifier(
+      cmpMeta.tagName,
+    )}');`,
   ];
-}
+};
 
 async function copyResources(config: Config, outputTarget: OutputTargetReact) {
   if (!config.sys || !config.sys.copy || !config.sys.glob) {
