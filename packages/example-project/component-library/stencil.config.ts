@@ -90,7 +90,6 @@ export const config: Config = {
     angularOutputTarget({
       componentCorePackage: 'component-library',
       directivesProxyFile: '../component-library-angular/src/directives/proxies.ts',
-      valueAccessorConfigs: angularValueAccessorBindings,
     }),
     reactOutputTarget({
       componentCorePackage: 'component-library',
@@ -99,7 +98,6 @@ export const config: Config = {
     vueOutputTarget({
       componentCorePackage: 'component-library',
       proxiesFile: '../component-library-vue/src/proxies.ts',
-      componentModels: vueComponentModels,
     }),
     svelteOutputTarget({
       accessors: true,
